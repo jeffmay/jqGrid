@@ -57,7 +57,7 @@ $.jgrid.extend({
 					}
 				}
 				if(ldat[isLeaf] == "true" || ldat[isLeaf] === true) {
-					twrap += ((ldat[icon] !== undefined && ldat[icon] !== "") ? ldat[icon] : $t.p.treeIcons.leaf)+" tree-leaf treeclick'";
+					twrap += ((ldat[icon] !== undefined && ldat[icon] !== "") ? ldat[icon] : $t.p.treeIcons.leaf)+" tree-leaf treeclick";
 					ldat[isLeaf] = true;
 					lf="leaf";
 				} else {
@@ -446,8 +446,9 @@ $.jgrid.extend({
 	collapseNode : function(rc) {
 		return this.each(function(){
 			if(!this.grid || !this.p.treeGrid) {return;}
-			if(rc.expanded) {
-				rc.expanded = false;
+			var expanded = this.p.treeReader.expanded_field;
+			if(rc[expanded]) {
+				rc[expanded] = false;
 				var id = $.jgrid.getAccessor(rc,this.p.localReader.id);
 				var rc1 = $("#"+id,this.grid.bDiv)[0];
 				$("div.treeclick",rc1).removeClass(this.p.treeIcons.minus+" tree-minus").addClass(this.p.treeIcons.plus+" tree-plus");
