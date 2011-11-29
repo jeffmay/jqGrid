@@ -1,5 +1,11 @@
 // Grouping module
 ;(function($){
+function parseGroupName(value) {
+	return $.trim(value.toString());
+}
+function parseGroupItem(value) {
+	return (value + '').split(' ').join('');
+}
 $.jgrid.extend({
 	groupingSetup : function () {
 		return this.each(function (){
@@ -32,8 +38,14 @@ $.jgrid.extend({
 							grp.visibiltyOnNextGrouping[i] = $("#"+$t.p.id+"_"+grp.groupField[i]).is(":visible");
 							$($t).jqGrid('hideCol',grp.groupField[i]);
 						}
-						grp.sortitems[i] = [];
-						grp.sortnames[i] = [];
+						if(grp.groupNames) {
+							grp.sortitems[i] = $.map(grp.groupNames, parseGroupItem);
+							grp.sortnames[i] = $.map(grp.groupNames, parseGroupName);
+						}
+						else {
+							grp.sortitems[i] = [];
+							grp.sortnames[i] = [];
+						}
 						grp.summaryval[i] = [];
 						if(grp.groupSummary[i]) {
 							grp.summary[i] =[];
@@ -60,21 +72,25 @@ $.jgrid.extend({
 		this.each(function(){
 			// currently only one level
 			// Is this a good idea to do it so!!!!?????
-			items[0]  += "";
-			var itm = items[0].toString().split(' ').join('');
+			var grpItem = parseGroupItem(items[0]);
+			var grpName = parseGroupName(items[0]);
 			
 			var grp = this.p.groupingView, $t= this;
-			if(gdata.hasOwnProperty(itm)) {
-				gdata[itm].push(rData);
+			if(gdata.hasOwnProperty(grpItem)) {
+				gdata[grpItem].push(rData);
 			} else {
-				gdata[itm] = [];
-				gdata[itm].push(rData);
-				grp.sortitems[0].push(itm);
-				grp.sortnames[0].push($.trim(items[0].toString()));
-				grp.summaryval[0][itm] = $.extend(true,[],grp.summary[0]);
+				gdata[grpItem] = [];
+				gdata[grpItem].push(rData);
+				grp.summaryval[0][grpItem] = $.extend(true,[],grp.summary[0]);
+			}
+			if(grp.sortitems[0].indexOf(grpItem) < 0) {
+				grp.sortitems[0].push(grpItem);
+			}
+			if(grp.sortnames[0].indexOf(grpName) < 0) {
+				grp.sortnames[0].push(grpName);
 			}
 			if(grp.groupSummary[0]) {
-				$.each(grp.summaryval[0][itm],function() {
+				$.each(grp.summaryval[0][grpItem],function() {
 					if ($.isFunction(this.st)) {
 						this.v = this.st.call($t, this.v, this.nm, record);
 					} else {
@@ -137,7 +153,7 @@ $.jgrid.extend({
 		return this.each(function(){
 			var $t = this,
 			grp = $t.p.groupingView,
-			str = "", icon = "", hid, pmrtl = grp.groupCollapse ? grp.plusicon : grp.minusicon, gv, cp, ii;
+			str = "", hid, pmrtl = grp.groupCollapse ? grp.plusicon : grp.minusicon, gv, cp, ii;
 			//only one level for now
 			if(!grp.groupDataSorted) {
 				// ???? TO BE IMPROVED
@@ -160,13 +176,23 @@ $.jgrid.extend({
 			}
 			$.each(grp.sortitems[0],function(i,n){
 				hid = $t.p.id+"ghead_"+i;
-				icon = "<span style='cursor:pointer;' class='ui-icon "+pmrtl+"' onclick=\"jQuery('#"+$t.p.id+"').jqGrid('groupingToggle','"+hid+"');return false;\"></span>";
 				try {
 					gv = $t.formatter(hid, grp.sortnames[0][i], cp, grp.sortitems[0] );
 				} catch (egv) {
 					gv = grp.sortnames[0][i];
 				}
-				str += "<tr id=\""+hid+"\" role=\"row\" class= \"ui-widget-content jqgroup ui-row-"+$t.p.direction+"\"><td colspan=\""+colspans+"\">"+icon+$.jgrid.format(grp.groupText[0], gv, grdata[n].length)+"</td></tr>";
+				// Create group row header
+				str += "<tr id=\""+hid+"\" role=\"row\" class= \"ui-widget-content jqgroup ui-row-"+$t.p.direction+"\"><td colspan=\""+colspans+"\">";
+				if(grdata[n].length > 0) {
+					// Only include the icon if there are any items in the group
+					str += "<span style='cursor:pointer;' class='ui-icon "+pmrtl+"' onclick=\"jQuery('#"+$t.p.id+"').jqGrid('groupingToggle','"+hid+"');return false;\"></span>";
+				}
+				else {
+					// Create space to line up text with icon
+					str += "<span style='background: none;' class='ui-icon "+pmrtl+"'></span>";
+				}
+				str += $.jgrid.format(grp.groupText[0], gv, grdata[n].length)+"</td></tr>";
+				// Add rows from group
 				for(var kk=0;kk<grdata[n].length;kk++) {
 					str += grdata[n][kk].join('');
 				}
