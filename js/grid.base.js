@@ -730,7 +730,7 @@ $.fn.jqGrid = function( pin ) {
 			data : [],
 			_index : {},
 			grouping : false,
-			groupingView : {groupField:[],groupOrder:[], groupText:[],groupColumnShow:[],groupSummary:[], showSummaryOnHide: false, sortitems:[], sortnames:[], groupDataSorted : false, summary:[],summaryval:[], plusicon: 'ui-icon-circlesmall-plus', minusicon: 'ui-icon-circlesmall-minus'},
+			groupingView : {groupField:[], groupNames:[], groupOrder:[], groupText:[],groupColumnShow:[],groupSummary:[], showSummaryOnHide: false, sortitems:[], sortnames:[], groupDataSorted : false, summary:[],summaryval:[], plusicon: 'ui-icon-circlesmall-plus', minusicon: 'ui-icon-circlesmall-minus'},
 			ignoreCase : false,
 			cmTemplate : {},
 			idPrefix : ""
@@ -1122,8 +1122,18 @@ $.fn.jqGrid = function( pin ) {
 			var br=ts.p.scroll?$.jgrid.randId():1,altr;
 			if (adjust) { rn *= adjust+1; }
 			var afterInsRow = $.isFunction(ts.p.afterInsertRow), hiderow="";
-			if(ts.p.grouping && ts.p.groupingView.groupCollapse === true) {
-				hiderow = " style=\"display:none;\"";
+            if(ts.p.grouping) {
+				if(ts.p.groupingView.groupCollapse === true) {
+					hiderow = " style=\"display:none;\"";
+				}
+				var grpnames = ts.p.groupingView.groupNames;
+                if(grpnames) {
+                    if(grpnames && grpnames.length > 0) {
+                        for(var z=0;z<grpnames.length;z++) {
+                            grpdata[grpnames[z]] = [];
+                        }
+                    }
+                }
 			}
 			while (j<gl) {
 				xmlr = gxml[j];
@@ -1290,8 +1300,18 @@ $.fn.jqGrid = function( pin ) {
 			var rn = parseInt(ts.p.rowNum,10),br=ts.p.scroll?$.jgrid.randId():1, altr;
 			if (adjust) { rn *= adjust+1; }
 			var afterInsRow = $.isFunction(ts.p.afterInsertRow), grpdata={}, hiderow="";
-			if(ts.p.grouping && ts.p.groupingView.groupCollapse === true) {
-				hiderow = " style=\"display:none;\"";
+            if(ts.p.grouping) {
+				if(ts.p.groupingView.groupCollapse === true) {
+					hiderow = " style=\"display:none;\"";
+				}
+				var grpnames = ts.p.groupingView.groupNames;
+                if(grpnames) {
+                    if(grpnames && grpnames.length > 0) {
+                        for(var z=0;z<grpnames.length;z++) {
+                            grpdata[grpnames[z]] = [];
+                        }
+                    }
+                }
 			}
 			while (i<len) {
 				cur = drows[i];
